@@ -173,6 +173,16 @@ class PhotoAlbumViewController: UIViewController {
     
     
     // MARK: Alert Message Functions
+    
+    private func promptDelete(itemAt indexPath: IndexPath) {
+        let alertVC = UIAlertController(title: "Confirm", message: "Are you suare you want to delete this photo?", preferredStyle: .alert)
+        let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { _ in
+            self.performDelete(indexPath: indexPath)
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        [deleteAction, cancelAction].forEach { alertVC.addAction($0) }
+        present(alertVC, animated: true)
+    }
 
     private func alertError(title: String, message: String) {
         let alertVC = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -204,14 +214,28 @@ class PhotoAlbumViewController: UIViewController {
     
     // MARK: Segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-           if segue.identifier == "showImage" {
-               if let indexPaths = collectionView.indexPathsForSelectedItems{
-                   let destinationController = segue.destination as! PhotoViewerController
-                   destinationController.photo = DataModel.photosData[indexPaths[0].row]
-                   collectionView.deselectItem(at: indexPaths[0], animated: false)
-               }
+       if segue.identifier == "showImage" {
+           if let indexPaths = collectionView.indexPathsForSelectedItems{
+               let destinationController = segue.destination as! PhotoViewerController
+               destinationController.photo = DataModel.photosData[indexPaths[0].row]
+               collectionView.deselectItem(at: indexPaths[0], animated: false)
            }
        }
+   }
+    
+    
+    private func performDelete(indexPath: IndexPath) {
+        setupFetchedResultsController()
+
+        DataModel.photosData.remove(at: indexPath.item)
+        if shouldDownload {
+            photosInfo.remove(at: indexPath.item)
+        }
+        
+        let photoToDelete = fetchedResultsController.object(at: indexPath)
+        pin.removeFromPhotos(photoToDelete)
+        try? dataController.viewContext.save()
+    }
 
     
     deinit {
@@ -246,8 +270,9 @@ extension PhotoAlbumViewController: UICollectionViewDataSource {
     
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "showImage", sender: nil)
+        promptDelete(itemAt: indexPath)
     }
+    
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotoCell", for: indexPath) as! PhotoCell

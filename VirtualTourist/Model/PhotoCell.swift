@@ -12,6 +12,7 @@ import CoreData
 class PhotoCell: UICollectionViewCell {
     @IBOutlet weak var imageView: UIImageView!
     
+    
     func downloadPhoto(for photoInfo: PhotoInfo, pin: Pin) {
         ApiClient.downloadPhoto(photoInfo: photoInfo) { (data, error) in
             guard let data = data else { return }
