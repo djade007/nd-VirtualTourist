@@ -70,12 +70,12 @@ class ApiClient {
     }
     
     class func getRandomPageNumber() -> Int {
-        guard let totalPages = DataModel.currentPhotosInfoResponse?.photos.pages,
-              totalPages > 1
-        else {
+        let totalPages = DataModel.currentPhotosInfoResponse?.photos.pages
+    
+        guard let totalPages = totalPages else {
             return 1
         }
-        let randomPage = Int.random(in: 1...totalPages)
-        return randomPage
+        
+        return Int.random(in: 1...totalPages)
     }
 }
